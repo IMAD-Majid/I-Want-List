@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>What Do You Want?</title>
+        <style>
+            * {
+                color:white;
+                background-color: #222;
+                font-family: sans-serif;
+            }
+            body{
+                margin:0;
+                margin-top:2em;
+            }
+            div{
+                margin:0 auto;
+                width:30em;
+                max-width: 100%;
+                padding:2em;
+                box-sizing: border-box;
+            }
+            input{
+                width:100%;
+                font-size: 100%;
+            }
+            input{
+                border:1px solid white;
+                padding:0.3em 1em;
+                box-sizing: border-box;
+                outline:none;
+            }
+            ul{
+                list-style-type:none;
+                padding:0;
+            }
+            li:nth-child(odd), li:nth-child(odd) *{
+                background-color: #444;
+            }
+            li{
+                padding:0.5em 0;
+                padding-left:1em;
+                display:flex;
+                margin:0.25em 0;
+            }
+            span{
+                width:100%;
+                overflow:hidden;
+            }
+            button{
+                border:none;
+                margin:0 0.1em;
+                font-family: consolas;
+                padding:0.2em 1em;
+            }
+            li:first-child button.top, li:first-child button.up{
+                display:none;
+            }
+            li:last-child button.bottom, li:last-child button.down{
+                display:none;
+            }
+
+            li:not(hover) button{
+                display:none;
+            }
+
+            li:hover button{
+                display:inline-block;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <input placeholder="I Want">
+            <ul>
+            </ul>
+        </div>
+        <script>
+            let listElm = document.querySelector("ul");
+            document.querySelector("input").addEventListener("keyup", (e)=>{
+                if (e.key == "Enter" && e.target.value != ''){
+                    iWant(e.target.value);
+                    saveData();
+                    e.target.value = '';
+                }
+            })
+            var data = localStorage.getItem("I-WantListData");
+            if (data != undefined){
+                for (let desire of JSON.parse(data)){
+                    iWant(desire);
+                }
+            }
+            function readData(){
+                let reading = [];
+                document.querySelectorAll("span").forEach((elm)=>{reading.push(elm.textContent)});
+                console.log("reading",reading)
+                return reading;
+            }
+            function saveData(){
+                localStorage.setItem("I-WantListData", JSON.stringify(readData()));
+            }
+            function getHTML(desire){
+                return `
+                <li>
+                    <span>${desire}</span>
+                    <button onclick="totop('${desire}')" class="top"><<</button>
+                    <button onclick="up('${desire}')" class="up"><</button>
+                    <button onclick="down('${desire}')" class="down">></button>
+                    <button onclick="tobottom('${desire}')" class="bottom">>></button>
+                    <button onclick="tobin('${desire}')">x</button>
+                </li>
+                `;
+            }
+            function iWant(desire){
+                listElm.innerHTML += getHTML(desire);
+            }
+            function remove(desire){
+                for (let child of listElm.children){
+                    if (child.children[0].textContent == desire){
+                        listElm.removeChild(child);
+                        break;
+                    }
+                }
+            }
+            function tobin(desire){
+                remove(desire);
+                document.querySelector("input").value = desire;
+                saveData();
+            }
+            function totop(desire){
+                remove(desire);
+                listElm.innerHTML = getHTML(desire) + listElm.innerHTML;
+                saveData();
+            }
+            function tobottom(desire){
+                remove(desire);
+                iWant(desire);
+                saveData();
+            }
+            function up(desire){
+                console.log(listElm)
+                for (let i=0; i<listElm.children.length; i++){
+                    let child = listElm.children[i];
+                    if (child.children[0].textContent == desire){
+                        child.innerHTML = listElm.children[i-1].innerHTML;
+                        listElm.children[i-1].innerHTML = getHTML(desire).trim().slice(4, getHTML(desire).length-5);
+                        break;
+                    }
+                }
+                saveData();
+            }
+            function down(desire){
+                for (let i=0; i<listElm.children.length; i++){
+                    let child = listElm.children[i];
+                    if (child.children[0].textContent == desire){
+                        child.innerHTML = listElm.children[i+1].innerHTML;
+                        listElm.children[i+1].innerHTML = getHTML(desire).trim().slice(4, getHTML(desire).length-5);
+                        break;
+                    }
+                }
+                saveData();
+            }
+
+        </script>
+    </body>
+</html>
